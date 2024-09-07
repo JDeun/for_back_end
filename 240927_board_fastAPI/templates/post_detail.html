@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ post.title }}</title>
+    <script>
+    function authenticateUser(action) {
+        var email = prompt("이메일을 입력하세요:");
+        var password = prompt("비밀번호를 입력하세요:");
+        
+        fetch('/posts/authenticate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                email: email,
+                password: password,
+                post_id: {{ post.id }}
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.authenticated) {
+                if (action === 'delete') {
+                    if (confirm('삭제할 경우 되돌릴 수 없습니다. 삭제하시겠습니까?')) {
+                        window.location.href = '/posts/delete/{{ post.id }}';
+                    }
+                } else if (action === 'edit') {
+                    window.location.href = '/posts/edit/{{ post.id }}';
+                }
+            } else {
+                alert('작성자가 아니기에 ' + (action === 'delete' ? '삭제' : '수정') + '이 불가합니다');
+            }
+        });
+    }
+    </script>
+</head>
+<body>
+    <h1>{{ post.title }}</h1>
+    <p>작성자: {{ post.author_id }}</p>
+    <p>작성일시: {{ post.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+    <p>LLM 모델: {{ post.llm_id }}</p>
+    <div>
+        {{ post.content }}
+    </div>
+    <button onclick="authenticateUser('edit')">수정하기</button>
+    <button onclick="authenticateUser('delete')">삭제하기</button>
+    <a href="/posts/web">목록으로 돌아가기</a>
+</body>
+</html>

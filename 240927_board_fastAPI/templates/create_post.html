@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>{% if post %}글 수정{% else %}새 글 작성{% endif %}</title>
+    <script>
+    function setBasicAuth() {
+        var email = prompt("이메일을 입력하세요:");
+        if (!email) return false;
+        var password = prompt("비밀번호를 입력하세요:");
+        if (!password) return false;
+        var basicAuth = btoa(email + ':' + password);
+        document.cookie = "Authorization=Basic " + basicAuth + "; path=/";
+        return true;
+    }
+    </script>
+</head>
+<body>
+    <h1>{% if post %}글 수정{% else %}새 글 작성{% endif %}</h1>
+    {% if error %}
+    <p style="color: red;">{{ error }}</p>
+    {% endif %}
+    <form action="{% if post %}/posts/edit/{{ post.id }}{% else %}/posts/create{% endif %}" method="post" onsubmit="return setBasicAuth()">
+        <div>
+            <label for="title">제목:</label>
+            <input type="text" id="title" name="title" required value="{{ post.title if post else '' }}">
+        </div>
+        <div>
+            <label for="content">내용:</label>
+            <textarea id="content" name="content" required>{{ post.content if post else '' }}</textarea>
+        </div>
+        <div>
+            <label for="llm_id">LLM 모델:</label>
+            <select id="llm_id" name="llm_id">
+                {% for model in llm_models %}
+                <option value="{{ model.id }}" {% if post and post.llm_id == model.id %}selected{% endif %}>{{ model.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit">{% if post %}수정{% else %}발행{% endif %}</button>
+    </form>
+    <a href="{% if post %}/posts/{{ post.id }}{% else %}/posts/web{% endif %}">취소</a>
+</body>
+</html>
